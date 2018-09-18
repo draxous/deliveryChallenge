@@ -1,11 +1,14 @@
 package com.easy.delivery.deazy.ui;
 
+import android.graphics.Color;
+import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.View;
 
 import com.easy.delivery.deazy.BaseApplication;
 import com.easy.delivery.deazy.R;
@@ -13,8 +16,6 @@ import com.easy.delivery.deazy.api.RestApi;
 import com.easy.delivery.deazy.api.model.DeliveryItem;
 import com.easy.delivery.deazy.ui.adapter.DeliveryListAdapter;
 import com.easy.delivery.deazy.util.NetworkUtils;
-import com.easy.delivery.deazy.util.SnackbarActions;
-import com.easy.delivery.deazy.util.SnackbarUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +29,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener, SnackbarActions {
+public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener {
 
     public static String DELIVERY_ITEM;
     @BindView(R.id.rec_delivery_list)
@@ -50,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     // before loading more.
     private int visibleThreshold = 5;
     private int lastVisibleItem, totalItemCount;
-    private boolean loading =false;
+    private boolean loading = false;
     private static List<DeliveryItem> moviesList;
 
     @Override
@@ -60,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         ButterKnife.bind(this);
 
         setSupportActionBar(mToolBar);
+
 
 
         ((BaseApplication) getApplication()).getNetworkComponent().inject(this);
@@ -74,9 +76,9 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
         if (moviesList == null) {
             moviesList = new ArrayList<>();
+            RefreshDeliveryList();
         }
 
-        RefreshDeliveryList();
 
         mRecDeliveryList.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -86,8 +88,8 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                 lastVisibleItem = mLinearLayoutManager
                         .findLastVisibleItemPosition();
                 if (!loading && totalItemCount <= (lastVisibleItem + visibleThreshold)) {
-                    LoadMoreDeliveryItems();
                     loading = true;
+                    LoadMoreDeliveryItems();
                 }
             }
 
@@ -132,7 +134,16 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             });
 
         } else {
-            SnackbarUtil.showSnackbar(mRecDeliveryList.getRootView(), this);
+            Snackbar.make(mRecDeliveryList, getString(R.string.no_connection), Snackbar.LENGTH_LONG)
+                    .setAction(getString(R.string.try_again), new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            RefreshDeliveryList();
+                        }
+                    })
+                    .setActionTextColor(Color.YELLOW)
+                    .show();
+
         }
 
 
@@ -154,7 +165,13 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             posts.enqueue(new Callback<List<DeliveryItem>>() {
                 @Override
                 public void onResponse(Call<List<DeliveryItem>> call, Response<List<DeliveryItem>> response) {
-                    if (response != null && response.body() != null && response.body().size() > 0) {
+                    if (response != null && response.body() != null) {
+
+                        removeLoadingMoreProgress();
+
+                        if(response.body().size() == 0){
+                            return;
+                        }
 
                         moviesList.addAll(response.body());
                         adapter.addToDeliveryList(moviesList);
@@ -162,7 +179,22 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
                         //since paging isn't available in api making sure it doesn't update offset wrongly
                         offset += response.body().size();
+                        loading = false;
+                    } else {
+                        removeLoadingMoreProgress();
+                        loading = false;
+                        Snackbar.make(mRecDeliveryList, getString(R.string.loading_error), Snackbar.LENGTH_LONG)
+                                .setAction(getString(R.string.try_again), new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View view) {
+                                        RefreshDeliveryList();
+                                    }
+                                })
+                                .setActionTextColor(Color.YELLOW)
+                                .show();
                     }
+
+
                 }
 
                 @Override
@@ -171,21 +203,28 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             });
 
         } else {
-            SnackbarUtil.showSnackbar(mRecDeliveryList.getRootView(), this);
+            Snackbar.make(mRecDeliveryList, getString(R.string.no_connection), Snackbar.LENGTH_LONG)
+                    .setAction(getString(R.string.try_again), new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            LoadMoreDeliveryItems();
+                        }
+                    })
+                    .setActionTextColor(Color.YELLOW)
+                    .show();
         }
 
-        loading = false;
 
     }
 
     private void addLoadingMoreProgress() {
         moviesList.add(null);
         adapter.addToDeliveryList(moviesList);
-        adapter.notifyItemInserted(moviesList.size()+1);
+        adapter.notifyItemInserted(moviesList.size() + 1);
     }
 
     private void removeLoadingMoreProgress() {
-        moviesList.remove(moviesList.size()-1);
+        moviesList.remove(moviesList.size() - 1);
         adapter.addToDeliveryList(moviesList);
         adapter.notifyItemRemoved(moviesList.size());
     }
@@ -195,9 +234,5 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         RefreshDeliveryList();
     }
 
-    @Override
-    public void onPositiveButtonClick() {
-        RefreshDeliveryList();
-    }
 }
 

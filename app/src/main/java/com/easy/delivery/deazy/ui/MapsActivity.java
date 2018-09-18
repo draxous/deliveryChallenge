@@ -18,6 +18,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.BitmapImageViewTarget;
 import com.easy.delivery.deazy.R;
 import com.easy.delivery.deazy.api.model.DeliveryItem;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -105,7 +106,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Add a marker in Sydney and move the camera
         LatLng address = new LatLng(deliveryItem.getLocation().getLat(), deliveryItem.getLocation().getLng());
         mMap.addMarker(new MarkerOptions().position(address).title(deliveryItem.getLocation().getAddress()));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(address));
+        CameraUpdate center = CameraUpdateFactory.newLatLng(address);
+        CameraUpdate zoom = CameraUpdateFactory.zoomTo(15);
+
+        mMap.moveCamera(center);
+        mMap.animateCamera(zoom);
     }
 
     @Override
