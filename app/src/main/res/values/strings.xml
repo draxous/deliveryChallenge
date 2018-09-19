@@ -4,5 +4,7 @@
     <string name="title_activity_details">Delivery Detail</string>
     <string name="no_connection">Connection failure. Please connect to a working network and try again</string>
     <string name="try_again">Try Again</string>
-    <string name="loading_error">Error occured from our side. Please try again</string>
+    <string name="loading_error">Error occurred from our side. Please try again</string>
+    <string name="address">Address</string>
+    <string name="delivery_info">Delivery info</string>
 </resources>

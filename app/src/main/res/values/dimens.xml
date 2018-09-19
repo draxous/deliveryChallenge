@@ -2,4 +2,6 @@
 <resources>
     <dimen name="list_item_padding">10dp</dimen>
     <dimen name="padding_normal">5dp</dimen>
+    <!--should add thumb_sizes specially for device sizes-->
+    <dimen name="thumb_size">56dp</dimen>
 </resources>

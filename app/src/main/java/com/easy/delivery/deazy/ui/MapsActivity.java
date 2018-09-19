@@ -2,7 +2,6 @@ package com.easy.delivery.deazy.ui;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v4.app.TaskStackBuilder;
@@ -17,7 +16,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.BitmapImageViewTarget;
 import com.easy.delivery.deazy.R;
-import com.easy.delivery.deazy.api.model.DeliveryItem;
+import com.easy.delivery.deazy.model.DeliveryItem;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
